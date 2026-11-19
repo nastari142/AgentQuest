@@ -14,7 +14,11 @@ const DEPLOY_BLOCK = 134383651; // leaderboard scans events from here
 const AGENT_ID_ADDRESS = "0x60B9262456dE011F7d15a54CdD8c48bAaa8B022F";
 const BSC_CHAIN_ID = 56;
 const BSC_CHAIN_ID_HEX = "0x38";
-const RPC_URL = "https://bsc-dataseed.bnbchain.org";
+const RPC_URLS = [
+  "https://rpc-bsc.48.club",
+  "https://bsc-dataseed.bnbchain.org",
+];
+const RPC_URL = RPC_URLS[0];
 const BSCSCAN_TX = "https://bscscan.com/tx/";
 const BSCSCAN_ADDR = "https://bscscan.com/address/";
 const CONTRACT_DEPLOYED =
@@ -739,7 +743,10 @@ function setActionsEnabled(enabled) {
 function setupReadProvider() {
   if (!CONTRACT_DEPLOYED) return;
   try {
-    readProvider = new ethers.JsonRpcProvider(RPC_URL);
+    // FallbackProvider: kalau RPC pertama gagal/timeout, coba yang berikut.
+    readProvider = new ethers.FallbackProvider(
+      RPC_URLS.map((url) => new ethers.JsonRpcProvider(url))
+    );
     readContract = new ethers.Contract(CONTRACT_ADDRESS, AGENT_QUEST_ABI, readProvider);
   } catch (err) {
     console.error("Read provider gagal:", err);
@@ -766,7 +773,7 @@ async function ensureBscChain() {
               chainId: BSC_CHAIN_ID_HEX,
               chainName: "BSC Mainnet",
               nativeCurrency: { name: "BNB", symbol: "BNB", decimals: 18 },
-              rpcUrls: [RPC_URL],
+              rpcUrls: RPC_URLS,
               blockExplorerUrls: ["https://bscscan.com"],
             },
           ],
@@ -1065,9 +1072,22 @@ async function loadLeaderboard() {
     return;
   }
   try {
+    // RPC publik membatasi rentang eth_getLogs (48.club maks 5000 blok,
+    // dataseed "limit exceeded") — pindai per chunk 4000 blok.
+    const CHUNK = 4000;
+    const latest = await readProvider.getBlockNumber();
+    const scan = async (filter) => {
+      const out = [];
+      for (let from = DEPLOY_BLOCK; from <= latest; from += CHUNK) {
+        const to = Math.min(from + CHUNK - 1, latest);
+        const logs = await readContract.queryFilter(filter, from, to);
+        out.push(...logs);
+      }
+      return out;
+    };
     const [checkIns, questDones] = await Promise.all([
-      readContract.queryFilter(readContract.filters.CheckIn, DEPLOY_BLOCK, "latest"),
-      readContract.queryFilter(readContract.filters.QuestCompleted, DEPLOY_BLOCK, "latest"),
+      scan(readContract.filters.CheckIn),
+      scan(readContract.filters.QuestCompleted),
     ]);
     // totalXp di tiap event adalah XP kumulatif user saat itu — ambil nilai max per alamat.
     const xpByAddr = new Map();
