@@ -126,6 +126,7 @@ const I18N = {
     lbTitle: "Leaderboard",
     lbDesc: "Top 10 XP holders, ranked by on-chain activity.",
     lbEmpty: "No activity yet — be the first!",
+    lbLoading: "Loading leaderboard…",
     lbLoadFail: "Couldn't load the leaderboard. Try again in a bit.",
     lbLevel: "Level ",
     txSent: "Transaction sent, waiting for confirmation: ",
@@ -226,6 +227,7 @@ const I18N = {
     lbTitle: "排行榜",
     lbDesc: "XP 最高的 10 名持有者，按链上活动排名。",
     lbEmpty: "暂无活动 — 成为第一个吧！",
+    lbLoading: "正在加载排行榜…",
     lbLoadFail: "无法加载排行榜，请稍后再试。",
     lbLevel: "等级 ",
     txSent: "交易已发送，等待确认：",
@@ -329,6 +331,7 @@ const I18N = {
     lbTitle: "Leaderboard",
     lbDesc: "Top 10 pemegang XP tertinggi, dihitung dari aktivitas on-chain.",
     lbEmpty: "Belum ada aktivitas — jadilah yang pertama!",
+    lbLoading: "Memuat leaderboard…",
     lbLoadFail: "Gagal memuat leaderboard. Coba lagi sebentar lagi.",
     lbLevel: "Level ",
     txSent: "Transaksi terkirim, menunggu konfirmasi: ",
@@ -1071,32 +1074,63 @@ async function loadLeaderboard() {
       '<p id="leaderboardNote" class="muted">' + t("lbEmpty") + "</p>";
     return;
   }
+  // Status loading selama pemindaian (kunjungan pertama bisa ~1 menit,
+  // karena RPC membatasi rentang getLogs).
+  listEl.innerHTML =
+    '<p id="leaderboardNote" class="muted">' + t("lbLoading") + "</p>";
   try {
-    // RPC publik membatasi rentang eth_getLogs (48.club maks 5000 blok,
-    // dataseed "limit exceeded") — pindai per chunk 4000 blok.
+    // getLogs HANYA lewat satu RPC (48.club): FallbackProvider membuat
+    // 48.club menolak eth_getLogs ("in batch triggered rate limit").
+    // Pindai per chunk 4000 blok, sequential + jeda 600ms.
+    const logsProvider = new ethers.JsonRpcProvider(RPC_URLS[0]);
+    const logsContract = new ethers.Contract(CONTRACT_ADDRESS, AGENT_QUEST_ABI, logsProvider);
     const CHUNK = 4000;
     const latest = await readProvider.getBlockNumber();
+    // Cache inkremental: kunjungan berikutnya hanya memindai blok baru.
+    const CACHE_KEY = "aq-lb-" + CONTRACT_ADDRESS.toLowerCase();
+    let cache = null;
+    try {
+      cache = JSON.parse(localStorage.getItem(CACHE_KEY) || "null");
+    } catch (_) {
+      cache = null;
+    }
+    const xpByAddr = new Map();
+    if (cache && cache.xp) {
+      for (const [addr, xp] of Object.entries(cache.xp)) {
+        try {
+          xpByAddr.set(addr, BigInt(xp));
+        } catch (_) {}
+      }
+    }
+    const fromBlock =
+      cache && Number.isInteger(cache.to) && cache.to >= DEPLOY_BLOCK
+        ? Math.min(cache.to + 1, latest + 1)
+        : DEPLOY_BLOCK;
     const scan = async (filter) => {
       const out = [];
-      for (let from = DEPLOY_BLOCK; from <= latest; from += CHUNK) {
+      for (let from = fromBlock; from <= latest; from += CHUNK) {
         const to = Math.min(from + CHUNK - 1, latest);
-        const logs = await readContract.queryFilter(filter, from, to);
+        const logs = await logsContract.queryFilter(filter, from, to);
         out.push(...logs);
+        if (to < latest) await new Promise((r) => setTimeout(r, 600));
       }
       return out;
     };
-    const [checkIns, questDones] = await Promise.all([
-      scan(readContract.filters.CheckIn),
-      scan(readContract.filters.QuestCompleted),
-    ]);
+    const checkIns = await scan(logsContract.filters.CheckIn);
+    const questDones = await scan(logsContract.filters.QuestCompleted);
     // totalXp di tiap event adalah XP kumulatif user saat itu — ambil nilai max per alamat.
-    const xpByAddr = new Map();
     for (const ev of [...checkIns, ...questDones]) {
       const addr = ev.args.user;
       const total = ev.args.totalXp;
       const prev = xpByAddr.get(addr) || 0n;
       if (total > prev) xpByAddr.set(addr, total);
     }
+    // Simpan cache hanya kalau pemindaian selesai penuh.
+    try {
+      const xpObj = {};
+      for (const [addr, total] of xpByAddr) xpObj[addr] = total.toString();
+      localStorage.setItem(CACHE_KEY, JSON.stringify({ to: latest, xp: xpObj }));
+    } catch (_) {}
     const ranked = [...xpByAddr.entries()]
       .sort((a, b) => (b[1] > a[1] ? 1 : b[1] < a[1] ? -1 : 0))
       .slice(0, 10);
