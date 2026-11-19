@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgentQuest — Quest hub for Agent ID holders</title>
+  <meta name="description" content="AgentQuest: daily check-ins and on-chain quests for Agent ID holders. No token, no fees besides gas." />
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
+</head>
+<body>
+  <!-- ===== INTRO OVERLAY (ala agentic404.xyz) ===== -->
+  <div id="intro" class="intro">
+    <span class="intro-eyebrow">Welcome to AgentQuest</span>
+    <div class="intro-center">
+      <span class="intro-giant">AQ</span>
+      <span class="intro-tag-num">QUEST</span>
+    </div>
+    <div class="intro-card">
+      <span class="intro-card-tag" data-i18n="introCardTag">POCKET MOONS COLLECTOR</span>
+      <span class="intro-card-xp">+50 XP</span>
+      <span class="intro-card-sub" data-i18n="introCardSub">ON-CHAIN QUEST · BSC</span>
+    </div>
+    <p class="intro-tagline" data-i18n-html="introTagline">Check in. Complete quests. <span class="txt-purple">Earn XP.</span></p>
+    <button id="skipIntro" class="intro-skip" type="button" data-i18n="skipIntro">Skip intro →</button>
+  </div>
+
+  <!-- ===== HEADER ===== -->
+  <header class="site-header">
+    <a class="brand" href="#">AQ™ <span>AGENTQUEST</span></a>
+    <nav class="site-nav">
+      <a href="#howSection" data-i18n="navHow">How to Play</a>
+      <a href="#questSection" data-i18n="navQuest">Quests</a>
+      <a href="#leaderboardSection" data-i18n="navLeaderboard">Leaderboard</a>
+      <a href="https://bscscan.com/address/0x7A17B5b00B7a40BCf4Dc6cB2d9A7b24CC4d82a45" target="_blank" rel="noopener" data-i18n="navContract">Contract ↗</a>
+    </nav>
+    <div class="header-connect">
+      <div class="lang-switch" id="langSwitch">
+        <button type="button" class="lang-btn active" data-lang="en">EN</button>
+        <button type="button" class="lang-btn" data-lang="zh">中文</button>
+        <button type="button" class="lang-btn" data-lang="id">ID</button>
+      </div>
+      <button id="connectBtn" class="btn btn-primary" type="button">Connect Wallet</button>
+      <div id="walletInfo" class="wallet-info hidden">
+        <span id="walletAddress" class="wallet-address"></span>
+        <span id="networkStatus" class="network-status"></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== ANNOUNCE STRIP ===== -->
+  <div class="announce" data-i18n="announce">✓ CONTRACT VERIFIED · Sourcify exact match · BSC Mainnet · No token, gas only</div>
+
+  <div class="container">
+    <p id="deployNote" class="muted hidden" data-i18n="deployNote">AgentQuest is coming soon — the contract is being prepared.</p>
+
+    <!-- ===== HERO ===== -->
+    <section class="hero">
+      <div class="hero-left">
+        <p class="eyebrow" data-i18n="heroEyebrow">● QUEST HUB FOR AGENT ID</p>
+        <h1 data-i18n-html="heroH1">check in.<br />complete <span class="txt-purple">quests.</span><br />level <span class="txt-green">up.</span></h1>
+        <p class="subtitle" data-i18n="heroSubtitle">Daily check-ins, complete quests, earn XP — all recorded on-chain. For Agent ID holders only.</p>
+        <div class="hero-cta">
+          <a href="#questSection" class="btn btn-primary" data-i18n="heroCtaQuest">Start Questing ↓</a>
+          <a href="#leaderboardSection" class="hero-link" data-i18n="heroCtaLb">View Leaderboard →</a>
+        </div>
+        <p class="hero-meta" data-i18n="heroMeta">AGENTQUEST · CHECK-IN +10 XP / QUEST +50 XP · BSC MAINNET</p>
+      </div>
+      <div class="hero-right">
+        <div class="tilt-card tc-back">
+          <span class="tilt-tag" data-i18n="tiltBackTag">FOUNDRY FACES COLLECTOR</span>
+          <span class="tilt-xp txt-yellow">+50 XP</span>
+          <span class="tilt-sub" data-i18n="tiltBackSub">RARE · ON-CHAIN</span>
+        </div>
+        <div class="tilt-card tc-front">
+          <span class="tilt-tag" data-i18n="tiltFrontTag">POCKET MOONS COLLECTOR</span>
+          <span class="tilt-xp txt-yellow">+50 XP</span>
+          <span class="tilt-sub" data-i18n="tiltFrontSub">ACTIVE QUEST · BSC</span>
+        </div>
+        <div class="sticker" data-i18n-html="sticker">NO TOKEN.<br />GAS ONLY.</div>
+        <p class="hero-caption" data-i18n="heroCaption">QUEST PREVIEW — COMPLETE FOR +50 XP</p>
+      </div>
+    </section>
+
+    <!-- ===== MARQUEE ===== -->
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track">
+        <span data-i18n-html="marquee">✳ DAILY CHECK-IN ✳ ON-CHAIN QUESTS ✳ EARN XP ✳ LEVEL UP ✳ LEADERBOARD ✳ AGENT ID ✳ BSC MAINNET ✳&nbsp;</span><span data-i18n-html="marquee">✳ DAILY CHECK-IN ✳ ON-CHAIN QUESTS ✳ EARN XP ✳ LEVEL UP ✳ LEADERBOARD ✳ AGENT ID ✳ BSC MAINNET ✳&nbsp;</span>
+      </div>
+    </div>
+
+    <div id="notice" class="notice hidden"></div>
+
+    <!-- ===== CARA MAIN ===== -->
+    <section class="card how" id="howSection">
+      <p class="eyebrow" data-i18n="howEyebrow">HOW TO PLAY</p>
+      <h2 data-i18n-html="howH2">Simple. <span class="txt-yellow">Three steps.</span></h2>
+      <div class="how-grid">
+        <div class="how-card">
+          <span class="how-num txt-purple">01</span>
+          <h3 data-i18n="how1Title">Connect Wallet</h3>
+          <p data-i18n="how1Text">Connect your BSC wallet. Every action requires an active Agent ID.</p>
+        </div>
+        <div class="how-card">
+          <span class="how-num txt-green">02</span>
+          <h3 data-i18n="how2Title">Daily Check-in</h3>
+          <p data-i18n="how2Text">Once a day (UTC time), get +10 XP and keep your streak alive.</p>
+        </div>
+        <div class="how-card">
+          <span class="how-num txt-yellow">03</span>
+          <h3 data-i18n="how3Title">Complete Quests</h3>
+          <p data-i18n="how3Text">Prove you hold a specific NFT — each quest is +50 XP, one time only.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="agentCard">
+      <h2 data-i18n="agentTitle">Agent ID Status</h2>
+      <p id="agentStatusText" class="agent-status">Connect your wallet to check your Agent ID.</p>
+    </section>
+
+    <section class="card">
+      <h2 data-i18n="statsTitle">Your Stats</h2>
+      <div class="stats-grid">
+        <div class="stat">
+          <span class="stat-label">XP</span>
+          <span class="stat-value val-yellow" id="statXp">—</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label" data-i18n="statLevel">Level</span>
+          <span class="stat-value val-purple" id="statLevel">—</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label" data-i18n="statStreak">Streak</span>
+          <span class="stat-value val-green" id="statStreak">—</span>
+        </div>
+        <div class="stat">
+          <span class="stat-label" data-i18n="statCheckins">Total Check-ins</span>
+          <span class="stat-value val-yellow" id="statCheckins">—</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 data-i18n="checkinTitle">Daily Check-in</h2>
+      <p class="muted" data-i18n="checkinDesc">Check in once a day (UTC time) to earn +10 XP and keep your streak alive.</p>
+      <button id="checkinBtn" class="btn btn-gold btn-big" type="button" disabled>Check in today (+10 XP)</button>
+      <p id="checkinNote" class="muted"></p>
+      <p id="txStatus" class="tx-status hidden"></p>
+    </section>
+
+    <section class="card" id="questSection">
+      <h2 data-i18n="questTitle">Quests</h2>
+      <p class="muted" data-i18n="questDesc">Prove you hold a specific NFT collection to earn XP. Each quest can only be completed once.</p>
+      <div id="questList" class="quest-list">
+        <p class="muted" data-i18n="questLoading">Loading quests…</p>
+      </div>
+    </section>
+
+    <section class="card" id="leaderboardSection">
+      <h2 data-i18n="lbTitle">Leaderboard</h2>
+      <p class="muted" data-i18n="lbDesc">Top 10 XP holders, ranked by on-chain activity.</p>
+      <div id="leaderboardList" class="leaderboard-list">
+        <p id="leaderboardNote" class="muted" data-i18n="lbEmpty">No activity yet — be the first!</p>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <p class="footer-logo">AGENTQUEST</p>
+      <p data-i18n="footerTagline">Quest hub for Agent ID holders. No token, gas only.</p>
+      <p class="footer-links">
+        <a href="https://bscscan.com/address/0x7A17B5b00B7a40BCf4Dc6cB2d9A7b24CC4d82a45" target="_blank" rel="noopener" data-i18n="footerBsc">Contract on BscScan ↗</a>
+        ·
+        <a href="https://sourcify.dev/#/lookup" target="_blank" rel="noopener" data-i18n="footerSourcify">Verified source (Sourcify) ↗</a>
+      </p>
+      <p class="muted" data-i18n="footerBuilt">Built for the Agent ID Hackathon · BSC Mainnet · ©2026 AgentQuest</p>
+    </footer>
+  </div>
+
+  <script>
+    /* Intro overlay: hilang sendiri setelah ~3 detik, atau lewat tombol Skip. */
+    (function () {
+      var intro = document.getElementById("intro");
+      if (!intro) return;
+      var done = false;
+      function hide() {
+        if (done) return;
+        done = true;
+        intro.classList.add("intro-done");
+        setTimeout(function () { intro.style.display = "none"; }, 700);
+      }
+      document.getElementById("skipIntro").addEventListener("click", hide);
+      setTimeout(hide, 3000);
+    })();
+  </script>
+  <script src="app.js"></script>
+</body>
+</html>
