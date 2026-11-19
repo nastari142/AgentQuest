@@ -24,29 +24,23 @@ const CONTRACT_DEPLOYED =
  * target/minBalance/xpReward, jadi copy tampilannya dari sini.
  * Quest ini ditambahkan on-chain setelah deploy (addQuest, owner only). */
 const QUEST_META = {
-  0: {
-    name: "Kolektor Pocket Moons",
+  3: {
+    name: "Pemegang AGC",
     description:
-      "Pegang minimal 1 NFT Pocket Moons di wallet kamu untuk menyelesaikan quest ini.",
-    target: "0xd088e5aa3c9b15d129846488e9ae5712ce7bf6b6",
+      "Pegang minimal 1.000 AGC di wallet kamu untuk menyelesaikan quest ini.",
+    target: "0x63dea5acdbe1f27c968907d08610a5f0a0284ba6",
   },
-  1: {
-    name: "Kolektor Foundry Faces",
+  4: {
+    name: "Pemegang USDT",
     description:
-      "Pegang minimal 1 NFT Foundry Faces di wallet kamu untuk menyelesaikan quest ini.",
-    target: "0x8653B09bDaD22c99915910962167F132E514331F",
-  },
-  2: {
-    name: "Kolektor 404 Strays",
-    description:
-      "Pegang minimal 1 NFT 404 Strays di wallet kamu untuk menyelesaikan quest ini.",
-    target: "0xc6d38bc5D854fDA20bD4473e9f3D0486747C178C",
+      "Pegang minimal 0,01 USDT di wallet kamu untuk menyelesaikan quest ini.",
+    target: "0x55d398326f99059fF775485246999027B3197955",
   },
 };
 
 /* ================= i18n (EN default, ZH, ID) =================
  * Brand/contract terms stay untranslated: AgentQuest, AQ, XP, BSC,
- * Agent ID, contract addresses, Pocket Moons / Foundry Faces / 404 Strays.
+ * Agent ID, contract addresses, AGC / USDT.
  * Static text is bound in index.html via data-i18n / data-i18n-html;
  * every dynamic string below goes through t(). */
 const I18N = {
@@ -55,7 +49,7 @@ const I18N = {
     metaDescription:
       "AgentQuest: daily check-ins and on-chain quests for Agent ID holders. No token, no fees besides gas.",
     skipIntro: "Skip intro →",
-    introCardTag: "POCKET MOONS COLLECTOR",
+    introCardTag: "AGC HOLDER",
     introCardSub: "ON-CHAIN QUEST · BSC",
     introTagline: 'Check in. Complete quests. <span class="txt-purple">Earn XP.</span>',
     navHow: "How to Play",
@@ -74,9 +68,9 @@ const I18N = {
     heroCtaQuest: "Start Questing ↓",
     heroCtaLb: "View Leaderboard →",
     heroMeta: "AGENTQUEST · CHECK-IN +10 XP / QUEST +50 XP · BSC MAINNET",
-    tiltBackTag: "FOUNDRY FACES COLLECTOR",
+    tiltBackTag: "USDT HOLDER",
     tiltBackSub: "RARE · ON-CHAIN",
-    tiltFrontTag: "POCKET MOONS COLLECTOR",
+    tiltFrontTag: "AGC HOLDER",
     tiltFrontSub: "ACTIVE QUEST · BSC",
     sticker: "NO TOKEN.<br />GAS ONLY.",
     heroCaption: "QUEST PREVIEW — COMPLETE FOR +50 XP",
@@ -89,7 +83,7 @@ const I18N = {
     how2Title: "Daily Check-in",
     how2Text: "Once a day (UTC time), get +10 XP and keep your streak alive.",
     how3Title: "Complete Quests",
-    how3Text: "Prove you hold a specific NFT — each quest is +50 XP, one time only.",
+    how3Text: "Prove you hold a minimum token balance — each quest is +50 XP, one time only.",
     agentTitle: "Agent ID Status",
     agentStatusConnect: "Connect your wallet to check your Agent ID.",
     agentStatusOk: "Agent ID active — you can check in and complete quests.",
@@ -109,7 +103,7 @@ const I18N = {
     checkinNext: "Next check-in available tomorrow (UTC time).",
     questTitle: "Quests",
     questDesc:
-      "Prove you hold a specific NFT collection to earn XP. Each quest can only be completed once.",
+      "Prove you hold a minimum token balance to earn XP. Each quest can only be completed once.",
     questLoading: "Loading quests…",
     questLoadFail: "Couldn't load quests. Try reloading the page.",
     questEmpty: "No quests yet — coming soon.",
@@ -159,7 +153,7 @@ const I18N = {
     metaDescription:
       "AgentQuest：面向 Agent ID 持有者的每日签到与链上任务。无代币，除 gas 外无任何费用。",
     skipIntro: "跳过介绍 →",
-    introCardTag: "POCKET MOONS 收藏家",
+    introCardTag: "AGC 持有者",
     introCardSub: "链上任务 · BSC",
     introTagline: '签到。完成任务。<span class="txt-purple">赚取 XP。</span>',
     navHow: "玩法",
@@ -177,9 +171,9 @@ const I18N = {
     heroCtaQuest: "开始任务 ↓",
     heroCtaLb: "查看排行榜 →",
     heroMeta: "AGENTQUEST · 签到 +10 XP / 任务 +50 XP · BSC 主网",
-    tiltBackTag: "FOUNDRY FACES 收藏家",
+    tiltBackTag: "USDT 持有者",
     tiltBackSub: "稀有 · 链上",
-    tiltFrontTag: "POCKET MOONS 收藏家",
+    tiltFrontTag: "AGC 持有者",
     tiltFrontSub: "进行中的任务 · BSC",
     sticker: "没有代币。<br />只需 GAS。",
     heroCaption: "任务预览 — 完成可得 +50 XP",
@@ -191,7 +185,7 @@ const I18N = {
     how2Title: "每日签到",
     how2Text: "每天一次（UTC 时间），获得 +10 XP 并保持连续签到。",
     how3Title: "完成任务",
-    how3Text: "证明你持有指定的 NFT —— 每个任务 +50 XP，仅可完成一次。",
+    how3Text: "证明你持有最低代币余额 —— 每个任务 +50 XP，仅可完成一次。",
     agentTitle: "Agent ID 状态",
     agentStatusConnect: "连接钱包以查看你的 Agent ID。",
     agentStatusOk: "Agent ID 已激活 —— 你可以签到和完成任务。",
@@ -209,7 +203,7 @@ const I18N = {
     checkinNeedId: "签到需要激活的 Agent ID。",
     checkinNext: "下次签到在明天（UTC 时间）。",
     questTitle: "任务",
-    questDesc: "证明你持有指定的 NFT 系列即可获得 XP。每个任务只能完成一次。",
+    questDesc: "证明你持有最低代币余额即可获得 XP。每个任务只能完成一次。",
     questLoading: "正在加载任务…",
     questLoadFail: "无法加载任务，请刷新页面重试。",
     questEmpty: "暂无任务 — 敬请期待。",
@@ -258,7 +252,7 @@ const I18N = {
     metaDescription:
       "AgentQuest: check-in harian dan quest on-chain untuk pemegang Agent ID. Tanpa token, tanpa biaya selain gas.",
     skipIntro: "Skip intro →",
-    introCardTag: "KOLEKTOR POCKET MOONS",
+    introCardTag: "PEMEGANG AGC",
     introCardSub: "QUEST ON-CHAIN · BSC",
     introTagline: 'Check in. Selesaikan quest. <span class="txt-purple">Dapatkan XP.</span>',
     navHow: "Cara Main",
@@ -277,9 +271,9 @@ const I18N = {
     heroCtaQuest: "Mulai Quest ↓",
     heroCtaLb: "Lihat Leaderboard →",
     heroMeta: "AGENTQUEST · CHECK-IN +10 XP / QUEST +50 XP · BSC MAINNET",
-    tiltBackTag: "KOLEKTOR FOUNDRY FACES",
+    tiltBackTag: "PEMEGANG USDT",
     tiltBackSub: "RARE · ON-CHAIN",
-    tiltFrontTag: "KOLEKTOR POCKET MOONS",
+    tiltFrontTag: "PEMEGANG AGC",
     tiltFrontSub: "QUEST AKTIF · BSC",
     sticker: "TANPA TOKEN.<br />HANYA GAS.",
     heroCaption: "QUEST PREVIEW — SELESAIKAN UNTUK +50 XP",
@@ -292,7 +286,7 @@ const I18N = {
     how2Title: "Check-in Harian",
     how2Text: "Sekali sehari (waktu UTC), dapat +10 XP dan jaga streak kamu.",
     how3Title: "Selesaikan Quest",
-    how3Text: "Buktikan kamu pegang NFT tertentu — tiap quest +50 XP, sekali saja.",
+    how3Text: "Buktikan kamu pegang saldo token minimum — tiap quest +50 XP, sekali saja.",
     agentTitle: "Status Agent ID",
     agentStatusConnect: "Hubungkan wallet untuk memeriksa Agent ID kamu.",
     agentStatusOk: "Agent ID aktif — kamu bisa check-in dan menyelesaikan quest.",
@@ -312,7 +306,7 @@ const I18N = {
     checkinNext: "Check-in berikutnya tersedia besok (waktu UTC).",
     questTitle: "Quest",
     questDesc:
-      "Buktikan kamu memegang koleksi NFT tertentu untuk mendapatkan XP. Satu quest hanya bisa diselesaikan sekali.",
+      "Buktikan kamu memegang saldo token minimum untuk mendapatkan XP. Satu quest hanya bisa diselesaikan sekali.",
     questLoading: "Memuat quest…",
     questLoadFail: "Gagal memuat quest. Coba muat ulang halaman.",
     questEmpty: "Belum ada quest — segera hadir.",
@@ -361,45 +355,33 @@ const I18N = {
 /* Nama + deskripsi quest per bahasa (kontrak hanya menyimpan target/min/xp). */
 const QUEST_META_I18N = {
   en: {
-    0: {
-      name: "Pocket Moons Collector",
-      description: "Hold at least 1 Pocket Moons NFT in your wallet to complete this quest.",
+    3: {
+      name: "AGC Holder",
+      description: "Hold at least 1,000 AGC in your wallet to complete this quest.",
     },
-    1: {
-      name: "Foundry Faces Collector",
-      description: "Hold at least 1 Foundry Faces NFT in your wallet to complete this quest.",
-    },
-    2: {
-      name: "404 Strays Collector",
-      description: "Hold at least 1 404 Strays NFT in your wallet to complete this quest.",
+    4: {
+      name: "USDT Holder",
+      description: "Hold at least 0.01 USDT in your wallet to complete this quest.",
     },
   },
   zh: {
-    0: {
-      name: "Pocket Moons 收藏家",
-      description: "在你的钱包中至少持有 1 个 Pocket Moons NFT 即可完成该任务。",
+    3: {
+      name: "AGC 持有者",
+      description: "在你的钱包中至少持有 1,000 AGC 即可完成该任务。",
     },
-    1: {
-      name: "Foundry Faces 收藏家",
-      description: "在你的钱包中至少持有 1 个 Foundry Faces NFT 即可完成该任务。",
-    },
-    2: {
-      name: "404 Strays 收藏家",
-      description: "在你的钱包中至少持有 1 个 404 Strays NFT 即可完成该任务。",
+    4: {
+      name: "USDT 持有者",
+      description: "在你的钱包中至少持有 0.01 USDT 即可完成该任务。",
     },
   },
   id: {
-    0: {
-      name: "Kolektor Pocket Moons",
-      description: "Pegang minimal 1 NFT Pocket Moons di wallet kamu untuk menyelesaikan quest ini.",
+    3: {
+      name: "Pemegang AGC",
+      description: "Pegang minimal 1.000 AGC di wallet kamu untuk menyelesaikan quest ini.",
     },
-    1: {
-      name: "Kolektor Foundry Faces",
-      description: "Pegang minimal 1 NFT Foundry Faces di wallet kamu untuk menyelesaikan quest ini.",
-    },
-    2: {
-      name: "Kolektor 404 Strays",
-      description: "Pegang minimal 1 NFT 404 Strays di wallet kamu untuk menyelesaikan quest ini.",
+    4: {
+      name: "Pemegang USDT",
+      description: "Pegang minimal 0,01 USDT di wallet kamu untuk menyelesaikan quest ini.",
     },
   },
 };
@@ -1023,6 +1005,7 @@ async function renderQuests() {
     const cards = [];
     for (let i = 0; i < count; i++) {
       const q = await source.quests(i);
+      if (!q.active) continue; // Quest nonaktif tidak ditampilkan.
       const meta = getQuestMeta(i, q.target);
       let done = false;
       let eligible = false;
